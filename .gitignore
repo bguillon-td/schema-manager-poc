@@ -1,0 +1,14 @@
+.DS_Store
+.project
+.settings
+target/
+bin/
+.idea/
+*.ipr
+*.iml
+*.iws
+.classpath
+.sonar/
+org.talend.bdd.jbehave.common/
+org.talend.selenium.common/
+classes/
