@@ -1,13 +1,15 @@
 package org.talend.schema;
 
+import org.apache.avro.Schema;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 
-import java.util.Collections;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +28,20 @@ public class TestConsumer {
         while(true){
             ConsumerRecords<String, String> messages = consumer.poll(100);
             messages.forEach(message -> {
-                System.out.println("Key : " + message.key() + ", value : " + message.value());
+                if(message.value() != null){
+                    System.out.println("Key : " + message.key() + ", value : " + message.value());
+
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    try {
+                        Map wrapperMessage = objectMapper.readValue(message.value(), Map.class);
+                        Schema schema = new Schema.Parser().parse((String) wrapperMessage.get("schema"));
+                        System.out.println("Schema: " + schema.toString());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+
             });
         }
 
@@ -38,8 +53,6 @@ public class TestConsumer {
         consumer.assign(topicPartitions);
         consumer.seekToBeginning(topicPartitions);
     }
-
-
 
     private KafkaConsumer<String, String> createConsumer(String broker, String group, int maxPollRecords) throws Exception {
         Map<String, Object> conf = new HashMap<>();
