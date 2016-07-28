@@ -21,8 +21,10 @@
         </encoder>
     </appender>
 
+    <logger name="akka" level="DEBUG"/>
+
     <root>
-        <level value="INFO" />
+        <level value="DEBUG" />
         <appender-ref ref="CONSOLE" />
     </root>
 </configuration>
