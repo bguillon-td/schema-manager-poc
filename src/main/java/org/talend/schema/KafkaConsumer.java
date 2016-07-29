@@ -1,14 +1,11 @@
 package org.talend.schema;
 
-import akka.Done;
-import akka.actor.ActorSystem;
-import akka.kafka.ConsumerSettings;
-import akka.kafka.Subscriptions;
-import akka.kafka.javadsl.Consumer;
-import akka.stream.ActorMaterializer;
-import akka.stream.javadsl.Sink;
-import akka.stream.javadsl.Source;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
+import java.util.concurrent.CompletionStage;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+
 import org.apache.avro.Schema;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -18,10 +15,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import java.util.Map;
-import java.util.concurrent.CompletionStage;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import akka.Done;
+import akka.actor.ActorSystem;
+import akka.kafka.ConsumerSettings;
+import akka.kafka.Subscriptions;
+import akka.kafka.javadsl.Consumer;
+import akka.stream.ActorMaterializer;
+import akka.stream.javadsl.Sink;
+import akka.stream.javadsl.Source;
 
 @Component
 public class KafkaConsumer {
@@ -30,6 +33,9 @@ public class KafkaConsumer {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private CacheService cacheService;
 
     private ActorSystem system;
 
@@ -44,13 +50,10 @@ public class KafkaConsumer {
         LOG.info("Starting consumer");
         system = ActorSystem.create("kafka-consumer");
         materializer = ActorMaterializer.create(system);
-        final ConsumerSettings<String, String> consumerSettings =
-                ConsumerSettings.create(system, new StringDeserializer(), new StringDeserializer())
-                        .withBootstrapServers("localhost:9092")
-                        .withGroupId("group1")
-                        .withClientId("Client")
-                        .withProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false")
-                        .withProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        final ConsumerSettings<String, String> consumerSettings = ConsumerSettings
+                .create(system, new StringDeserializer(), new StringDeserializer()).withBootstrapServers("localhost:9092")
+                .withGroupId("group1").withClientId("Client").withProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false")
+                .withProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
         this.source = Consumer.plainSource(consumerSettings, Subscriptions.topics("_schemas"));
 
@@ -61,14 +64,16 @@ public class KafkaConsumer {
         LOG.info("End of consumer start");
     }
 
-    private void handleMessage(ConsumerRecord<String, String> message){
+    private void handleMessage(ConsumerRecord<String, String> message) {
         LOG.info("Got a message: " + message.key() + " / " + message.value());
-        if(message.value() != null){
+        if (message.value() != null) {
             LOG.info("Key : " + message.key() + ", value : " + message.value());
             try {
                 Map wrapperMessage = objectMapper.readValue(message.value(), Map.class);
                 Schema schema = new Schema.Parser().parse((String) wrapperMessage.get("schema"));
                 LOG.info("Schema: " + schema.toString());
+
+                // this.cacheService.put(schema);
             } catch (Exception e) {
                 LOG.error("Error in consumer", e);
             }
@@ -78,7 +83,7 @@ public class KafkaConsumer {
     @PreDestroy
     public void shutdown() throws Exception {
         LOG.info("Starting consumer shutdown");
-        if(system != null){
+        if (system != null) {
             system.shutdown();
         }
         LOG.info("Consumer shutdown completed");

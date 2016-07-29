@@ -24,7 +24,7 @@
     <logger name="akka" level="DEBUG"/>
 
     <root>
-        <level value="DEBUG" />
-        <appender-ref ref="CONSOLE" />
+        <level value="INFO"/>
+        <appender-ref ref="CONSOLE"/>
     </root>
 </configuration>
