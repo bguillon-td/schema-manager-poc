@@ -2,7 +2,8 @@ package org.talend.schema.service;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.Before;
@@ -40,21 +41,57 @@ public class KafkaConsumerTest {
     }
 
     @Test
-    public void testHandleMessage() throws Exception {
+    public void testHandleMessage_correct_message_expect_cache_is_updated() throws Exception {
+        // schema with a record type, and optional parameters: name, namespace, doc
         ConsumerRecord<String, String> message = new ConsumerRecord<>("testTopic", 0, 0,
                 "{\"subject\":\"schema5\",\"version\":1,\"magic\":0,\"keytype\":\"SCHEMA\"}",
                 "{\"subject\":\"schema5\",\"version\":1,\"id\":1,\"schema\":\"{\\\"type\\\":\\\"record\\\",\\\"doc\\\":\\\"a short description\\\",\\\"name\\\":\\\"record6\\\",\\\"namespace\\\":\\\"org.talend\\\",\\\"fields\\\":[{\\\"name\\\":\\\"value\\\",\\\"type\\\":\\\"long\\\"}]}\"}");
 
         kafkaConsumer.handleMessage(message);
 
-        Mockito.verify(cacheService).putSchemaSummary(eventCaptor.capture());
+        verify(cacheService).putSchemaSummary(eventCaptor.capture());
         SchemaSummary schemaSummary = eventCaptor.getValue();
 
+        // schema summary is complete
         assertNotNull(schemaSummary);
         assertEquals("org.talend", schemaSummary.getNamespace());
         assertEquals("record6", schemaSummary.getName());
         assertEquals("a short description", schemaSummary.getDescription());
         assertEquals((Integer) 1, schemaSummary.getVersion());
+    }
+
+    @Test
+    public void testHandleMessage_schema_without_name_expect_cache_is_not_updated() throws Exception {
+        // schema without name, namespace and doc fields
+        ConsumerRecord<String, String> message = new ConsumerRecord<>("testTopic", 0, 0,
+                "{\"subject\":\"schema5\",\"version\":1,\"magic\":0,\"keytype\":\"SCHEMA\"}",
+                "{\"subject\":\"schema5\",\"version\":1,\"id\":1,\"schema\":\"{\\\"type\\\":\\\"record\\\",\\\"name\\\":\\\"record1\\\",\\\"fields\\\":[{\\\"name\\\":\\\"value\\\",\\\"type\\\":\\\"long\\\"}]}\"}");
+        kafkaConsumer.handleMessage(message);
+
+        // cache is not updated with the incorrect schema registry
+        verify(cacheService, never()).putSchemaSummary(any(SchemaSummary.class));
+    }
+
+    @Test
+    public void testHandleMessage_noop_message_expect_cache_is_not_updated() throws Exception {
+        // NOOP message, without value
+        ConsumerRecord<String, String> message = new ConsumerRecord<>("testTopic", 0, 0, "{\"magic\":0,\"keytype\":\"NOOP\"}", null);
+        kafkaConsumer.handleMessage(message);
+
+        // cache is not updated with the incorrect schema registry
+        verify(cacheService, never()).putSchemaSummary(any(SchemaSummary.class));
+    }
+
+    @Test
+    public void testHandleMessage_primitive_type_schema_expect_cache_is_not_updated() throws Exception {
+        // schema with a primitive type
+        ConsumerRecord<String, String> message = new ConsumerRecord<>("testTopic", 0, 0,
+                "{\"subject\":\"schema5\",\"version\":1,\"magic\":0,\"keytype\":\"SCHEMA\"}",
+                "{\"subject\":\"schema5\",\"version\":1,\"id\":1,\"schema\":\"{\\\"type\\\":\\\"string\\\"}\"}");
+        kafkaConsumer.handleMessage(message);
+
+        // cache is not updated with the incorrect schema registry
+        verify(cacheService, never()).putSchemaSummary(any(SchemaSummary.class));
     }
 
 }

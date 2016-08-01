@@ -42,4 +42,9 @@ public class SchemaSummary {
         this.version = version;
     }
 
+    @Override
+    public String toString() {
+        return "SchemaSummary{" + "namespace='" + namespace + '\'' + ", name='" + name + '\'' + ", description='" + description
+                + '\'' + ", version=" + version + '}';
+    }
 }

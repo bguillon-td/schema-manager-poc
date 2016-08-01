@@ -7,6 +7,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.apache.avro.Schema;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -67,7 +68,6 @@ public class KafkaConsumer {
 
     @PostConstruct
     public void setup() throws Exception {
-        LOG.info("Starting consumer");
         system = ActorSystem.create("kafka-consumer");
         materializer = ActorMaterializer.create(system);
         final ConsumerSettings<String, String> consumerSettings = ConsumerSettings
@@ -77,12 +77,8 @@ public class KafkaConsumer {
                 .withProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, kafkaResetConfig);
 
         this.source = Consumer.plainSource(consumerSettings, Subscriptions.topics(kafkaTopic));
-
         this.sink = Sink.foreach(this::handleMessage);
-
         source.runWith(sink, materializer);
-
-        LOG.info("End of consumer start");
     }
 
     protected void handleMessage(ConsumerRecord<String, String> message) {
@@ -98,7 +94,12 @@ public class KafkaConsumer {
                 schemaSummary.setName(schema.getName());
                 schemaSummary.setDescription(schema.getDoc());
                 schemaSummary.setVersion((Integer) wrapperMessage.get("version"));
-                this.cacheService.putSchemaSummary(schemaSummary);
+
+                if(StringUtils.isBlank(schemaSummary.getNamespace()) || StringUtils.isBlank(schemaSummary.getName())){
+                    LOG.warn("Following schema summary could not been stored in the schema summary cache, due to missing properties : " + schemaSummary);
+                }else{
+                    this.cacheService.putSchemaSummary(schemaSummary);
+                }
             }
         } catch (Exception exception) {
             LOG.warn("Following message was not stored in the schema summary cache : " + message.key() + " / " + message.value(),
@@ -108,11 +109,10 @@ public class KafkaConsumer {
 
     @PreDestroy
     public void shutdown() throws Exception {
-        LOG.info("Starting consumer shutdown");
         if (system != null) {
             system.shutdown();
         }
-        LOG.info("Consumer shutdown completed");
+        LOG.info("Kafka consumer shutdown is completed");
     }
 
 }
