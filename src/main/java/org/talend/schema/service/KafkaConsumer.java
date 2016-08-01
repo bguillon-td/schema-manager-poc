@@ -1,4 +1,4 @@
-package org.talend.schema;
+package org.talend.schema.service;
 
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.talend.schema.model.SchemaSummary;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -35,7 +36,7 @@ public class KafkaConsumer {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private CacheService cacheService;
+    private CacheServiceImpl cacheService;
 
     private ActorSystem system;
 
@@ -64,19 +65,24 @@ public class KafkaConsumer {
         LOG.info("End of consumer start");
     }
 
-    private void handleMessage(ConsumerRecord<String, String> message) {
-        LOG.info("Got a message: " + message.key() + " / " + message.value());
-        if (message.value() != null) {
-            LOG.info("Key : " + message.key() + ", value : " + message.value());
-            try {
+    protected void handleMessage(ConsumerRecord<String, String> message) {
+        try {
+            LOG.info("Got a message: " + message.key() + " / " + message.value());
+            Map wrapperKey = objectMapper.readValue(message.key(), Map.class);
+            if ("SCHEMA".equals(wrapperKey.get("keytype")) && message.value() != null) {
                 Map wrapperMessage = objectMapper.readValue(message.value(), Map.class);
                 Schema schema = new Schema.Parser().parse((String) wrapperMessage.get("schema"));
-                LOG.info("Schema: " + schema.toString());
 
-                // this.cacheService.put(schema);
-            } catch (Exception e) {
-                LOG.error("Error in consumer", e);
+                SchemaSummary schemaSummary = new SchemaSummary();
+                schemaSummary.setNamespace(schema.getNamespace());
+                schemaSummary.setName(schema.getName());
+                schemaSummary.setDescription(schema.getDoc());
+                schemaSummary.setVersion((Integer) wrapperMessage.get("version"));
+                this.cacheService.putSchemaSummary(schemaSummary);
             }
+        } catch (Exception exception) {
+            LOG.warn("Following message was not stored in the schema summary cache : " + message.key() + " / " + message.value(),
+                    exception);
         }
     }
 

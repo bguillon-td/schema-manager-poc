@@ -1,4 +1,4 @@
-package org.talend.schema;
+package org.talend.schema.model;
 
 public class SchemaSummary {
 
@@ -41,4 +41,5 @@ public class SchemaSummary {
     public void setVersion(Integer version) {
         this.version = version;
     }
+
 }
