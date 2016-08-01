@@ -13,6 +13,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.talend.schema.model.SchemaSummary;
 
@@ -46,17 +47,36 @@ public class KafkaConsumer {
 
     private Source<ConsumerRecord<String, String>, Consumer.Control> source;
 
+    @Value("${kafka.broker}")
+    private String kafkaBrokerUrl;
+
+    @Value("${kafka.group}")
+    private String kafkaGroup;
+
+    @Value("${kafka.clientId}")
+    private String kafkaClientId;
+
+    @Value("${kafka.resetConfig}")
+    private String kafkaResetConfig;
+
+    @Value("${kafka.enableAutoCommit}")
+    private String kafkaEnableAutoCommit;
+
+    @Value("${kafka.topic}")
+    private String kafkaTopic;
+
     @PostConstruct
     public void setup() throws Exception {
         LOG.info("Starting consumer");
         system = ActorSystem.create("kafka-consumer");
         materializer = ActorMaterializer.create(system);
         final ConsumerSettings<String, String> consumerSettings = ConsumerSettings
-                .create(system, new StringDeserializer(), new StringDeserializer()).withBootstrapServers("localhost:9092")
-                .withGroupId("group1").withClientId("Client").withProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false")
-                .withProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+                .create(system, new StringDeserializer(), new StringDeserializer()).withBootstrapServers(kafkaBrokerUrl)
+                .withGroupId(kafkaGroup).withClientId(kafkaClientId)
+                .withProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, kafkaEnableAutoCommit)
+                .withProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, kafkaResetConfig);
 
-        this.source = Consumer.plainSource(consumerSettings, Subscriptions.topics("_schemas"));
+        this.source = Consumer.plainSource(consumerSettings, Subscriptions.topics(kafkaTopic));
 
         this.sink = Sink.foreach(this::handleMessage);
 
