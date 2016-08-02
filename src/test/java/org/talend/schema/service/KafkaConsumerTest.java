@@ -3,7 +3,8 @@ package org.talend.schema.service;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.Before;
@@ -75,7 +76,8 @@ public class KafkaConsumerTest {
     @Test
     public void testHandleMessage_noop_message_expect_cache_is_not_updated() throws Exception {
         // NOOP message, without value
-        ConsumerRecord<String, String> message = new ConsumerRecord<>("testTopic", 0, 0, "{\"magic\":0,\"keytype\":\"NOOP\"}", null);
+        ConsumerRecord<String, String> message = new ConsumerRecord<>("testTopic", 0, 0, "{\"magic\":0,\"keytype\":\"NOOP\"}",
+                null);
         kafkaConsumer.handleMessage(message);
 
         // cache is not updated with the incorrect schema registry

@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.talend.schema.model.SchemaSummary;
+import org.talend.schema.util.ModelBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -89,15 +90,15 @@ public class KafkaConsumer {
                 Map wrapperMessage = objectMapper.readValue(message.value(), Map.class);
                 Schema schema = new Schema.Parser().parse((String) wrapperMessage.get("schema"));
 
-                SchemaSummary schemaSummary = new SchemaSummary();
-                schemaSummary.setNamespace(schema.getNamespace());
-                schemaSummary.setName(schema.getName());
-                schemaSummary.setDescription(schema.getDoc());
-                schemaSummary.setVersion((Integer) wrapperMessage.get("version"));
+                SchemaSummary schemaSummary = new ModelBuilders.SchemaSummaryBuilder().namespace(schema.getNamespace())
+                        .name(schema.getName()).description(schema.getDoc()).version((Integer) wrapperMessage.get("version"))
+                        .build();
 
-                if(StringUtils.isBlank(schemaSummary.getNamespace()) || StringUtils.isBlank(schemaSummary.getName())){
-                    LOG.warn("Following schema summary could not been stored in the schema summary cache, due to missing properties : " + schemaSummary);
-                }else{
+                if (StringUtils.isBlank(schemaSummary.getNamespace()) || StringUtils.isBlank(schemaSummary.getName())) {
+                    LOG.warn(
+                            "Following schema summary could not been stored in the schema summary cache, due to missing properties : "
+                                    + schemaSummary);
+                } else {
                     this.cacheService.putSchemaSummary(schemaSummary);
                 }
             }

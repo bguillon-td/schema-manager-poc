@@ -16,6 +16,7 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.talend.schema.Application;
 import org.talend.schema.model.SchemaSummary;
+import org.talend.schema.util.ModelBuilders;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application.class)
@@ -31,17 +32,11 @@ public class CacheServiceImplTest {
 
     @Test
     public void testPutSchemaSummary() {
-        SchemaSummary schemaSummary1 = new SchemaSummary();
-        schemaSummary1.setNamespace("org.talend");
-        schemaSummary1.setName("record1");
-        // schemaSummary1.setDescription("Short description");
-        schemaSummary1.setVersion(0);
+        SchemaSummary schemaSummary1 = new ModelBuilders.SchemaSummaryBuilder().namespace("org.talend").name("record1")
+                .description("Short description").version(0).build();
 
-        SchemaSummary schemaSummary2 = new SchemaSummary();
-        schemaSummary2.setNamespace("org.talend");
-        schemaSummary2.setName("record1");
-        schemaSummary2.setDescription("Short description");
-        schemaSummary2.setVersion(1);
+        SchemaSummary schemaSummary2 = new ModelBuilders.SchemaSummaryBuilder().namespace("org.talend").name("record1")
+                .description("Short description").version(1).build();
 
         cacheService.putSchemaSummary(schemaSummary1);
 
@@ -73,23 +68,14 @@ public class CacheServiceImplTest {
         Collection<SchemaSummary> schemaSummaryList = cacheService.getSchemaSummaries("org.talend");
         assertEquals(0, schemaSummaryList.size());
 
-        SchemaSummary schemaSummary1 = new SchemaSummary();
-        schemaSummary1.setNamespace("org.talend");
-        schemaSummary1.setName("r_record");
-        schemaSummary1.setDescription("Short description");
-        schemaSummary1.setVersion(0);
+        SchemaSummary schemaSummary1 = new ModelBuilders.SchemaSummaryBuilder().namespace("org.talend").name("r_record")
+                .description("Short description").version(0).build();
 
-        SchemaSummary schemaSummary2 = new SchemaSummary();
-        schemaSummary2.setNamespace("org.talend");
-        schemaSummary2.setName("s_record");
-        schemaSummary2.setDescription("Short description");
-        schemaSummary2.setVersion(0);
+        SchemaSummary schemaSummary2 = new ModelBuilders.SchemaSummaryBuilder().namespace("org.talend").name("s_record")
+                .description("Short description").version(0).build();
 
-        SchemaSummary schemaSummary3 = new SchemaSummary();
-        schemaSummary3.setNamespace("org.talend");
-        schemaSummary3.setName("a_record");
-        schemaSummary3.setDescription("Short description");
-        schemaSummary3.setVersion(0);
+        SchemaSummary schemaSummary3 = new ModelBuilders.SchemaSummaryBuilder().namespace("org.talend").name("a_record")
+                .description("Short description").version(0).build();
 
         // put 3 schema summaries into cache, on the same namespace and with different names
         cacheService.putSchemaSummary(schemaSummary1);
@@ -111,11 +97,8 @@ public class CacheServiceImplTest {
         Optional<SchemaSummary> schemaSummaryResult = cacheService.getSchemaSummary("org.talend", "r_record");
         assertFalse(schemaSummaryResult.isPresent());
 
-        SchemaSummary schemaSummary1 = new SchemaSummary();
-        schemaSummary1.setNamespace("org.talend");
-        schemaSummary1.setName("r_record");
-        schemaSummary1.setDescription("Short description");
-        schemaSummary1.setVersion(0);
+        SchemaSummary schemaSummary1 = new ModelBuilders.SchemaSummaryBuilder().namespace("org.talend").name("r_record")
+                .description("Short description").version(0).build();
 
         cacheService.putSchemaSummary(schemaSummary1);
 

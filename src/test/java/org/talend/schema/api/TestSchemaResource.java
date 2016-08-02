@@ -51,11 +51,11 @@ public class TestSchemaResource extends TestIntegrationAbstract {
                                 hasEntry("namespace", "org.talend.schema.subpackage")),
                         hasEntry("name", "b_record"), hasEntry("name", "z_record")));
 
-        //empty namespace
+        // empty namespace
         response = given().contentType(ContentType.JSON).get(GENERAL_OPERATIONS_API + "/");
         response.then().statusCode(HttpStatus.NOT_FOUND.value());
 
-        //null namespace
+        // null namespace
         response = given().contentType(ContentType.JSON).get(GENERAL_OPERATIONS_API + "/null");
         response.then().statusCode(HttpStatus.OK.value()).body("", Matchers.hasSize(0));
     }

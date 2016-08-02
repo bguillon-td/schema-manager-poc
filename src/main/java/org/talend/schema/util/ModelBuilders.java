@@ -15,7 +15,7 @@ public class ModelBuilders {
 
         private SchemaSummary schemaSummary;
 
-        public SchemaSummaryBuilder(){
+        public SchemaSummaryBuilder() {
             this.schemaSummary = new SchemaSummary();
         }
 

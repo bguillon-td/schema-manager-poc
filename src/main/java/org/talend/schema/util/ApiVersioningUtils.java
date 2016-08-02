@@ -10,7 +10,7 @@ public abstract class ApiVersioningUtils {
      */
     public final static String CURRENT_VERSION = "v1";
 
-    private ApiVersioningUtils(){
+    private ApiVersioningUtils() {
         // no op
     }
 
