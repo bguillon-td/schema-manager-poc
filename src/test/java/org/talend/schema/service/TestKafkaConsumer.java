@@ -21,11 +21,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application.class)
-public class KafkaConsumerTest {
+public class TestKafkaConsumer {
 
     @InjectMocks
     @Autowired
-    private KafkaConsumer kafkaConsumer;
+    private KafkaConsumer kafkaConsumer = new KafkaConsumer();
 
     @Mock
     private CacheServiceImpl cacheService;

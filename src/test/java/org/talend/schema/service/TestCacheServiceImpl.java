@@ -20,7 +20,7 @@ import org.talend.schema.util.ModelBuilders;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application.class)
-public class CacheServiceImplTest {
+public class TestCacheServiceImpl {
 
     @Autowired
     private CacheServiceImpl cacheService;
