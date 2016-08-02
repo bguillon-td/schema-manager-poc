@@ -4,10 +4,9 @@ import static org.junit.Assert.*;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.List;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -71,8 +70,7 @@ public class CacheServiceImplTest {
 
     @Test
     public void testGetSchemaSummaries() {
-        Stream<SchemaSummary> schemaSummaryStream = cacheService.getSchemaSummaries("org.talend");
-        List<SchemaSummary> schemaSummaryList = schemaSummaryStream.collect(Collectors.toList());
+        Collection<SchemaSummary> schemaSummaryList = cacheService.getSchemaSummaries("org.talend");
         assertEquals(0, schemaSummaryList.size());
 
         SchemaSummary schemaSummary1 = new SchemaSummary();
@@ -98,14 +96,14 @@ public class CacheServiceImplTest {
         cacheService.putSchemaSummary(schemaSummary2);
         cacheService.putSchemaSummary(schemaSummary3);
 
-        schemaSummaryStream = cacheService.getSchemaSummaries("org.talend");
-        schemaSummaryList = schemaSummaryStream.collect(Collectors.toList());
+        schemaSummaryList = cacheService.getSchemaSummaries("org.talend");
 
         // get the 3 schema summaries, sorted by name
         assertEquals(schemaSummaryList.size(), 3);
-        assertEquals(schemaSummary3, schemaSummaryList.get(0));
-        assertEquals(schemaSummary1, schemaSummaryList.get(1));
-        assertEquals(schemaSummary2, schemaSummaryList.get(2));
+        Iterator<SchemaSummary> iterator = schemaSummaryList.iterator();
+        assertEquals(schemaSummary3, iterator.next());
+        assertEquals(schemaSummary1, iterator.next());
+        assertEquals(schemaSummary2, iterator.next());
     }
 
     @Test

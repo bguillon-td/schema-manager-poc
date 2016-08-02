@@ -1,17 +1,14 @@
 package org.talend.schema.service;
 
+import java.util.Collection;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.annotation.Validated;
 import org.talend.schema.model.SchemaSummary;
 
 import com.google.common.collect.Table;
@@ -35,8 +32,8 @@ public class CacheServiceImpl implements CacheService {
     }
 
     @Override
-    public Stream<SchemaSummary> getSchemaSummaries(String namespace) {
-        return this.schemaTable.row(namespace).values().stream();
+    public Collection<SchemaSummary> getSchemaSummaries(String namespace) {
+        return this.schemaTable.row(namespace).values();
     }
 
     @Override

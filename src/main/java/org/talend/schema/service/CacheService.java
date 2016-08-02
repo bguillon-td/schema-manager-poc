@@ -1,9 +1,8 @@
 package org.talend.schema.service;
 
+import java.util.Collection;
 import java.util.Optional;
-import java.util.stream.Stream;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
@@ -19,7 +18,7 @@ public interface CacheService {
      * @param namespace the namespace to filter on
      * @return the list of schema summaries matching the namespace
      */
-    Stream<SchemaSummary> getSchemaSummaries(@NotBlank(message = "error.schema.namespace.null") String namespace);
+    Collection<SchemaSummary> getSchemaSummaries(@NotBlank(message = "error.schema.namespace.null") String namespace);
 
     /**
      * Get the schema summary matching the given namespace and name
