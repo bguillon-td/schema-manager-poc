@@ -19,14 +19,6 @@ public class ModelBuilders {
             this.schemaSummary = new SchemaSummary();
         }
 
-        public SchemaSummaryBuilder(String namespace, String name, String description, Integer version) {
-            this.schemaSummary = new SchemaSummary();
-            this.schemaSummary.setNamespace(namespace);
-            this.schemaSummary.setName(name);
-            this.schemaSummary.setDescription(description);
-            this.schemaSummary.setVersion(version);
-        }
-
         public SchemaSummaryBuilder namespace(String namespace) {
             this.schemaSummary.setNamespace(namespace);
             return this;
